@@ -32,7 +32,9 @@ CAPTIONS = [
      "15 Oct 2026, avoid.py 80 rpm, stop at 30 cm, data in avoid_80_30.csv.\n"
      "Duty drops to 0 in the first loop that reads 30 cm or less (bold).\n"
      "The wheels coast to 0 in 0.38 s while the sensor sees the wall close\n"
-     "from 29.5 to 26.3 cm. rpm is measured over the loop before each row."),
+     "from 29.5 to 26.3 cm. Speed was 70 rpm, still rising towards 80 from\n"
+     "a close start. Loops average 82 ms. rpm is measured over the loop\n"
+     "before each row."),
 ]
 
 
