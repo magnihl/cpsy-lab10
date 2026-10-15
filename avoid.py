@@ -7,7 +7,7 @@ reads STOP_CM or less, then stop.
   python3 avoid.py                 80 rpm for 10 s, stop at 30 cm
   python3 avoid.py 80 10 35        80 rpm for 10 s, stop at 35 cm
 
-Every loop is logged to avoid_<rpm>_<stop>.csv. Only stop and go
+Every loop is logged to avoid_<rpm>_<stop>_<time>.csv. Only stop and go
 events are printed, since printing every loop slowed Lab 7's loop
 from 50 to 77 ms.
 
@@ -52,7 +52,7 @@ sensor = Distance()
 print(f"target {TARGET:.0f} rpm ({config.rpm_to_cm_s(TARGET):.0f} cm/s) "
       f"for {DURATION:.0f} s, stop at {STOP_CM:.0f} cm")
 
-name = f"avoid_{TARGET:.0f}_{STOP_CM:.0f}.csv"
+name = f"avoid_{TARGET:.0f}_{STOP_CM:.0f}_{time.strftime('%H%M%S')}.csv"
 rows = []
 stopped = False
 
