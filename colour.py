@@ -134,3 +134,21 @@ def edge_side(reading, target, order=config.TRACK_ORDER, white=config.WHITE):
     if max(left, right) < config.EDGE_MARGIN * min(left, right):
         return None
     return "left" if left > right else "right"
+
+
+def drift(reading, target, order=config.TRACK_ORDER, white=config.WHITE):
+    """How far the sensor sits towards the right neighbour, as a number.
+
+    The right neighbour's ratio minus the left one's, each divided by
+    white. On the middle stripe it rises as the sensor creeps right and
+    falls as it creeps left, before the reading turns into either
+    colour. Measured 20 Oct on blue: about +0.07 centred, +0.11 on the
+    blue/green edge, +0.16 on green, -0.32 on red. None for an outer
+    stripe, which has white on one side.
+    """
+    i = order.index(target)
+    if i == 0 or i == len(order) - 1:
+        return None
+    r, g, b, _ = reading
+    ratio = dict(zip(COLOURS, (r / white[0], g / white[1], b / white[2])))
+    return ratio[order[i + 1]] - ratio[order[i - 1]]

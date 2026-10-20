@@ -23,7 +23,7 @@ import sys
 import time
 
 import config
-from colour import ColourSensor, classify, edge_side, side_of
+from colour import ColourSensor, classify, drift, edge_side, side_of
 from distance import Distance
 from estop import EStop
 from rover import disconnect, Rover, SpeedController, Wheel
@@ -38,6 +38,13 @@ STOP_CM = float(sys.argv[5]) if len(sys.argv) > 5 else 30.0
 # hard correction, but half speed on a whole neighbour stripe was too
 # weak for the curves, it swung out onto white. 20 Oct
 SOFT_TURN = 0.5
+# proportional steering on the middle stripe: inner wheel share is
+# 1 - STEER_GAIN x drift from centre. the blue/green edge is about 0.04
+# from centre, so 12 gives about half speed there, as SOFT_TURN did
+STEER_GAIN = 12.0
+# drift with the sensor centred on blue, measured at start. None for an
+# outer stripe, where drift cannot be read
+centre = None
 
 if TARGET not in config.TRACK_ORDER:
     sys.exit(f"{TARGET} is not one of {', '.join(config.TRACK_ORDER)}")
@@ -57,9 +64,18 @@ def steer(seen, reading, target, last_turn):
     last_turn is the last correction made: "left", "right" or None.
 
     Returns (left_rpm, right_rpm, turn). The turn grows with the drift:
-    on an edge the inner wheel slows to SOFT_TURN, on a neighbour stripe
-    or white past the outer stripes it stops.
+    on the middle stripe the inner wheel slows in proportion to the
+    drift from centre, on an edge to SOFT_TURN or less, on a neighbour
+    stripe or white past the outer stripes it stops.
     """
+    if centre is not None and seen == target:
+        error = drift(reading, target, ORDER) - centre
+        inner = RPM * max(0.0, 1.0 - STEER_GAIN * abs(error))
+        # positive error is drift to the right, so turn left
+        turn = "left" if error > 0 else "right"
+        if turn == "right":
+            return RPM, inner, turn
+        return inner, RPM, turn
     if seen == target:
         # keep the last correction as memory: if the line is lost next,
         # the curve most likely bends the way it was last corrected
@@ -68,9 +84,15 @@ def steer(seen, reading, target, last_turn):
     inner = 0.0
     if seen == "grey":
         # an edge between two stripes: the mix says which side, so turn
-        # softly before the reading becomes the neighbour
+        # before the reading becomes the neighbour. the side comes from
+        # edge_side, which never got one wrong in the logs; a centre that
+        # is slightly off could flip the sign of the error. the error only
+        # makes the turn harder, never softer than SOFT_TURN
         side = edge_side(reading, target, ORDER)
         inner = RPM * SOFT_TURN
+        if centre is not None:
+            error = drift(reading, target, ORDER) - centre
+            inner = min(inner, RPM * max(0.0, 1.0 - STEER_GAIN * abs(error)))
     if side == "left":
         turn = "right"
     elif side == "right":
@@ -103,6 +125,12 @@ rows = []
 turn = None
 stopped = False
 
+# the rover is placed with the sensor centred on the target, so the
+# first reading defines the centre for this run's light and canvas
+centre = drift(colour.read(), TARGET, ORDER)
+if centre is not None:
+    print(f"centre drift {centre:+.3f}")
+
 try:
     estop.arm()
     start = time.monotonic()
@@ -126,14 +154,17 @@ try:
         t = time.monotonic() - start
         rows.append((round(t, 3), *reading, seen, turn or "",
                      "" if cm is None else round(cm, 1), int(stopped),
-                     round(lr, 1), round(ld, 4), round(rr, 1), round(rd, 4)))
+                     round(lr, 1), round(ld, 4), round(rr, 1), round(rd, 4),
+                     "" if centre is None else
+                     round(drift(reading, TARGET, ORDER) - centre, 3)))
     control.stop()
 finally:
     with open(name, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["t", "red", "green", "blue", "clear", "seen", "turn",
                     "cm", "stopped",
-                    "left_rpm", "left_duty", "right_rpm", "right_duty"])
+                    "left_rpm", "left_duty", "right_rpm", "right_duty",
+                    "error"])
         w.writerows(rows)
     print(f"wrote {name}, {len(rows)} rows")
     estop.close()
