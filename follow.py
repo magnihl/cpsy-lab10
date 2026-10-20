@@ -33,9 +33,10 @@ RPM = float(sys.argv[2]) if len(sys.argv) > 2 else 30.0
 DURATION = float(sys.argv[3]) if len(sys.argv) > 3 else 20.0
 DIRECTION = sys.argv[4] if len(sys.argv) > 4 else "forward"
 STOP_CM = float(sys.argv[5]) if len(sys.argv) > 5 else 30.0
-# inner wheel speed, as a share of RPM, when the sensor is on a
-# neighbour stripe. stopping it outright made every small drift on the
-# straight a hard correction, 20 Oct
+# inner wheel speed, as a share of RPM, on the edge between two
+# stripes. stopping it outright made every small drift on the straight a
+# hard correction, but half speed on a whole neighbour stripe was too
+# weak for the curves, it swung out onto white. 20 Oct
 SOFT_TURN = 0.5
 
 if TARGET not in config.TRACK_ORDER:
@@ -54,9 +55,9 @@ def steer(seen, target, last_turn):
     "left", "right", or None when on the target or it cannot tell.
     last_turn is the last correction made: "left", "right" or None.
 
-    Returns (left_rpm, right_rpm, turn). On a neighbour stripe or an edge
-    the inner wheel slows to SOFT_TURN; on white past the outer stripes
-    it stops, for a tighter turn.
+    Returns (left_rpm, right_rpm, turn). The turn grows with the drift:
+    on an edge the inner wheel slows to SOFT_TURN, on a neighbour stripe
+    or white past the outer stripes it stops.
     """
     side = side_of(seen, target, ORDER)
     if seen == target:
@@ -64,9 +65,9 @@ def steer(seen, target, last_turn):
         # the curve most likely bends the way it was last corrected
         return RPM, RPM, last_turn
     if side == "left":
-        turn, inner = "right", RPM * SOFT_TURN
+        turn, inner = "right", 0.0
     elif side == "right":
-        turn, inner = "left", RPM * SOFT_TURN
+        turn, inner = "left", 0.0
     else:
         # no neighbour to say where: keep turning the same way, or creep
         # straight if there has been no correction yet. grey is mostly
