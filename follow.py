@@ -12,7 +12,10 @@ as the lab page suggests: the sensor sits near the axle.
   python3 follow.py blue 30 90 forward 0   distance stop off, for testing
 
 Driving the track the other way round swaps which stripe is on the left,
-so "reverse" flips config.TRACK_ORDER.
+so "reverse" flips config.TRACK_ORDER. Following the middle stripe the
+rover also notices by itself: facing the right way, a hard turn away
+from red or green brings blue back. If white comes first, the turn went
+the wrong way, so the order is flipped.
 
 Every loop is logged to follow_<colour>_<rpm>_<direction>_<time>.csv.
 Ctrl+C stops it, so does the e-stop button.
@@ -124,6 +127,9 @@ name = f"follow_{TARGET}_{RPM:.0f}_{DIRECTION}_{time.strftime('%H%M%S')}.csv"
 rows = []
 turn = None
 stopped = False
+# the last red or green seen since blue, for spotting a wrong way start
+last_neighbour = None
+flips = 0
 
 # the rover is placed with the sensor centred on the target, so the
 # first reading defines the centre for this run's light and canvas
@@ -139,6 +145,23 @@ try:
         volts, cm = sensor.read()
         reading = colour.read()
         seen = classify(reading)
+
+        if seen in ("red", "green"):
+            last_neighbour = seen
+        elif seen == TARGET:
+            last_neighbour = None
+        elif seen == "white" and last_neighbour and ORDER.index(TARGET) == 1:
+            # a neighbour then white: the turn away from it drove further
+            # out, so the stripes are the other way round. a wrong flip
+            # gives the same pattern again and flips back
+            ORDER = tuple(reversed(ORDER))
+            turn = {"left": "right", "right": "left"}.get(turn)
+            # drift is right neighbour minus left, so it changes sign too
+            centre = -centre if centre is not None else None
+            last_neighbour = None
+            flips += 1
+            print(f"{time.monotonic() - start:5.2f} s  FLIP  stripes left to right "
+                  f"{' '.join(ORDER)}")
 
         # latched, as in avoid.py: once stopped it stays stopped
         if STOP_CM > 0 and not stopped and cm is not None and cm <= STOP_CM:
@@ -156,7 +179,8 @@ try:
                      "" if cm is None else round(cm, 1), int(stopped),
                      round(lr, 1), round(ld, 4), round(rr, 1), round(rd, 4),
                      "" if centre is None else
-                     round(drift(reading, TARGET, ORDER) - centre, 3)))
+                     round(drift(reading, TARGET, ORDER) - centre, 3),
+                     flips))
     control.stop()
 finally:
     with open(name, "w", newline="") as f:
@@ -164,7 +188,7 @@ finally:
         w.writerow(["t", "red", "green", "blue", "clear", "seen", "turn",
                     "cm", "stopped",
                     "left_rpm", "left_duty", "right_rpm", "right_duty",
-                    "error"])
+                    "error", "flips"])
         w.writerows(rows)
     print(f"wrote {name}, {len(rows)} rows")
     estop.close()
