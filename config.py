@@ -121,6 +121,11 @@ WHITE_FRACTION = 0.6
 # lines measured 1.5 (green) to 1.9, the grey table 1.0. 20 Oct
 COLOUR_MARGIN = 1.25
 
+# on an edge, one neighbour's ratio must beat the other's by this to say
+# which side. edges measured 1.24 (blue/green) and 1.55 (blue/red), the
+# floor 1.0 to 1.02. 20 Oct
+EDGE_MARGIN = 1.1
+
 # the stripes left to right, seen in the direction the rover drives.
 # driving the track the other way round reverses this
 TRACK_ORDER = ("red", "blue", "green")

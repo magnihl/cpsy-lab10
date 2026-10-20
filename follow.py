@@ -23,7 +23,7 @@ import sys
 import time
 
 import config
-from colour import ColourSensor, classify, side_of
+from colour import ColourSensor, classify, edge_side, side_of
 from distance import Distance
 from estop import EStop
 from rover import disconnect, Rover, SpeedController, Wheel
@@ -47,11 +47,12 @@ ORDER = (config.TRACK_ORDER if DIRECTION == "forward"
          else tuple(reversed(config.TRACK_ORDER)))
 
 
-def steer(seen, target, last_turn):
+def steer(seen, reading, target, last_turn):
     """Decide the wheel speeds for this loop.
 
     seen is what the sensor reads now: "white", "grey", "red", "green"
-    or "blue". side_of(seen, target) says where the sensor has drifted:
+    or "blue", and reading the raw (red, green, blue, clear) it came
+    from. side_of(seen, target) says where the sensor has drifted:
     "left", "right", or None when on the target or it cannot tell.
     last_turn is the last correction made: "left", "right" or None.
 
@@ -59,28 +60,30 @@ def steer(seen, target, last_turn):
     on an edge the inner wheel slows to SOFT_TURN, on a neighbour stripe
     or white past the outer stripes it stops.
     """
-    side = side_of(seen, target, ORDER)
     if seen == target:
         # keep the last correction as memory: if the line is lost next,
         # the curve most likely bends the way it was last corrected
         return RPM, RPM, last_turn
+    side = side_of(seen, target, ORDER)
+    inner = 0.0
+    if seen == "grey":
+        # an edge between two stripes: the mix says which side, so turn
+        # softly before the reading becomes the neighbour
+        side = edge_side(reading, target, ORDER)
+        inner = RPM * SOFT_TURN
     if side == "left":
-        turn, inner = "right", 0.0
+        turn = "right"
     elif side == "right":
-        turn, inner = "left", 0.0
-    else:
-        # no neighbour to say where: keep turning the same way, or creep
-        # straight if there has been no correction yet. grey is mostly
-        # the edge between two stripes, so it turns softly. white is past
-        # the outer stripes, so it turns hard
-        if last_turn is None:
-            return RPM, RPM, None
+        turn = "left"
+    elif last_turn is not None:
+        # no colour says where: keep turning the same way. on white, past
+        # the outer stripes, that turn stays hard
         turn = last_turn
-        inner = 0.0 if seen == "white" else RPM * SOFT_TURN
+    else:
+        return RPM, RPM, None
     if turn == "right":
         return RPM, inner, turn
     return inner, RPM, turn
-
 
 estop = EStop()
 rover = Rover(estop)
@@ -116,7 +119,7 @@ try:
             print(f"{time.monotonic() - start:5.2f} s  STOP  {cm:.0f} cm")
 
         if not stopped:
-            left_rpm, right_rpm, turn = steer(seen, TARGET, turn)
+            left_rpm, right_rpm, turn = steer(seen, reading, TARGET, turn)
             control.target(left_rpm, right_rpm)
 
         (lr, ld), (rr, rd) = control.update()

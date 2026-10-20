@@ -113,3 +113,24 @@ def side_of(seen, target, order=config.TRACK_ORDER):
             return "right"
         return None
     return "left" if order.index(seen) < order.index(target) else "right"
+
+
+def edge_side(reading, target, order=config.TRACK_ORDER, white=config.WHITE):
+    """On the edge between the target and a neighbour, which side it is.
+
+    A half and half reading fails classify's margin and comes out grey,
+    but the neighbour's channel is still raised: on the blue/green edge
+    green is above red, on the blue/red edge red is above green. Only
+    works for the middle stripe, which has a colour on both sides.
+    Returns "left", "right", or None for an outer stripe or the floor,
+    where the two are about equal.
+    """
+    i = order.index(target)
+    if i == 0 or i == len(order) - 1:
+        return None
+    r, g, b, _ = reading
+    ratio = dict(zip(COLOURS, (r / white[0], g / white[1], b / white[2])))
+    left, right = ratio[order[i - 1]], ratio[order[i + 1]]
+    if max(left, right) < config.EDGE_MARGIN * min(left, right):
+        return None
+    return "left" if left > right else "right"
