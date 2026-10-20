@@ -78,7 +78,7 @@ class ColourSensor:
 
 
 def classify(reading, white=config.WHITE):
-    """Name what the sensor sees: "white", "red", "green" or "blue".
+    """Name what the sensor sees: "white", "grey", "red", "green" or "blue".
 
     The LED is weak in blue, so the raw blue count is never the largest,
     even on the blue line. Each channel is divided by its white reading
@@ -88,7 +88,12 @@ def classify(reading, white=config.WHITE):
     if c / white[3] > config.WHITE_FRACTION:
         return "white"
     ratios = (r / white[0], g / white[1], b / white[2])
-    return COLOURS[ratios.index(max(ratios))]
+    first, second = sorted(ratios, reverse=True)[:2]
+    # grey is dim white, all three ratios about equal. without this the
+    # grey table read 0.31 / 0.31 / 0.31 and came out "red" by a hair
+    if first < config.COLOUR_MARGIN * second:
+        return "grey"
+    return COLOURS[ratios.index(first)]
 
 
 def side_of(seen, target, order=config.TRACK_ORDER):
@@ -96,9 +101,10 @@ def side_of(seen, target, order=config.TRACK_ORDER):
 
     Returns "left", "right", or None when it is on the target or cannot
     tell. White next to an outer stripe gives the side; white next to the
-    middle stripe could be either edge, so it gives None.
+    middle stripe could be either edge, so it gives None. Grey is off the
+    canvas altogether, so it gives None too.
     """
-    if seen == target:
+    if seen == target or seen == "grey":
         return None
     if seen == "white":
         if target == order[0]:

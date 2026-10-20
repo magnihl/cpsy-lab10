@@ -35,8 +35,8 @@ if TARGET not in config.TRACK_ORDER:
 def steer(seen, target, last_turn):
     """Decide the wheel speeds for this loop.
 
-    seen is what the sensor reads now: "white", "red", "green" or
-    "blue". side_of(seen, target) says where the sensor has drifted:
+    seen is what the sensor reads now: "white", "grey", "red", "green"
+    or "blue". side_of(seen, target) says where the sensor has drifted:
     "left", "right", or None when on the target or it cannot tell.
     last_turn is the last correction made: "left", "right" or None.
 

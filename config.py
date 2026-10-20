@@ -108,6 +108,10 @@ WHITE = (6640, 5100, 2815, 15100)
 # red and green, measured 0.41
 WHITE_FRACTION = 0.6
 
+# a colour must beat the next ratio by this factor, or it is grey. the
+# lines measured 1.5 (green) to 1.9, the grey table 1.0. 20 Oct
+COLOUR_MARGIN = 1.25
+
 # the stripes left to right, seen in the direction the rover drives.
 # driving the track the other way round reverses this
 TRACK_ORDER = ("red", "blue", "green")
