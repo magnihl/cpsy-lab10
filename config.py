@@ -94,3 +94,20 @@ def turn_rate_deg_s(left_rpm, right_rpm, track_cm=TRACK_CM):
     diff = rpm_to_cm_s(right_rpm) - rpm_to_cm_s(left_rpm)
     return math.degrees(diff / track_cm)
 
+
+# --- colour sensor -------------------------------------------------
+# 100 ms and gain 4 as in Lab 2. at the default 2.4 ms the blue line
+# read (4, 3, 3, 11), the same as no light. 20 Oct
+COLOUR_INTEGRATION_MS = 100
+COLOUR_GAIN = 4
+
+# (red, green, blue, clear) on the white canvas, Exhibit 10A, 20 Oct.
+# depends on room light and sensor height, measure again each session
+WHITE = (6640, 5100, 2815, 15100)
+# clear above this fraction of white counts as white. the brightest lines,
+# red and green, measured 0.41
+WHITE_FRACTION = 0.6
+
+# the stripes left to right, seen in the direction the rover drives.
+# driving the track the other way round reverses this
+TRACK_ORDER = ("red", "blue", "green")
