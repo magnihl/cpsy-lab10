@@ -74,8 +74,8 @@ def steer(seen, target, last_turn):
 
 estop = EStop()
 rover = Rover(estop)
-left = Wheel(config.ENCODER_PIN_A)
-right = Wheel(config.ENCODER_PIN_B)
+left = Wheel(config.LEFT_ENCODER)
+right = Wheel(config.RIGHT_ENCODER)
 control = SpeedController(rover, left, right)
 sensor = Distance()
 colour = ColourSensor()

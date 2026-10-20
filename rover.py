@@ -101,11 +101,11 @@ class Wheel:
 
 
 class Rover:
-    def __init__(self, estop, motor_a=config.MOTOR_A, motor_b=config.MOTOR_B):
+    def __init__(self, estop, left=config.LEFT_MOTOR, right=config.RIGHT_MOTOR):
         # kept as separate attributes as well as inside Robot, because
         # closed loop control sets each wheel's duty independently
-        self.left_motor = Motor(**motor_a)
-        self.right_motor = Motor(**motor_b)
+        self.left_motor = Motor(**left)
+        self.right_motor = Motor(**right)
         self._robot = Robot(left=self.left_motor, right=self.right_motor)
         self._estop = estop
 

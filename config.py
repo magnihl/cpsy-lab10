@@ -19,9 +19,18 @@ ENCODER_B = ("GPIO16", "GPIO26")
 # never wakes Python. no direction, the commanded direction gives that
 ENCODER_PIN_A = "GPIO5"
 # GPIO16 is motor B's C1 on paper but reads no edges at all, 13 Oct, so
-# the right wheel uses C2 instead. likely a loose jumper on Pi pin 36.
+# motor B uses C2 instead. likely a loose jumper on Pi pin 36.
 # single channel counting does not care which of the two it uses
 ENCODER_PIN_B = "GPIO26"
+
+# which driver channel is which side. wheeltest.py, 20 Oct: the code's
+# left spun the physical right wheel. never mattered before Lab 10,
+# both wheels always ran at the same speed. each encoder stays with its
+# own motor, the PID in Lab 7 proved those pairs belong together
+LEFT_MOTOR = MOTOR_B
+RIGHT_MOTOR = MOTOR_A
+LEFT_ENCODER = ENCODER_PIN_B
+RIGHT_ENCODER = ENCODER_PIN_A
 
 SLEEP_PIN = "GPIO25"
 STOP_PIN = "GPIO4"

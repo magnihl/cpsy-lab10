@@ -19,8 +19,8 @@ from rover import disconnect, Wheel
 
 INTERVAL = 1.0
 
-left = Wheel(config.ENCODER_PIN_A)
-right = Wheel(config.ENCODER_PIN_B)
+left = Wheel(config.LEFT_ENCODER)
+right = Wheel(config.RIGHT_ENCODER)
 
 print("  left rev   left rpm    right rev   right rpm")
 try:
