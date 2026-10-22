@@ -173,9 +173,9 @@ def figure_10_1(ax):
 
 
 def figure_10_2(ax):
-    runs = [("step 10, stop a wheel", "follow_blue_30_forward_130904.csv"),
-            ("step 12, soft at the edge", "follow_blue_30_forward_133206.csv"),
-            ("step 13, proportional", "follow_blue_30_forward_133730.csv")]
+    runs = [("step 8, stop a wheel", "follow_blue_30_forward_130904.csv"),
+            ("step 10, soft at the edge", "follow_blue_30_forward_133206.csv"),
+            ("step 11, proportional", "follow_blue_30_forward_133730.csv")]
     for i, (name, log) in enumerate(runs):
         y = 2 - i
         rows = window(read_log(log), 5, 15)
