@@ -42,7 +42,7 @@ LABEL = {"red": "red", "blue": "blue", "green": "green",
 CAPTIONS = {
     "10A": (
         "Exhibit 10A. What the colour sensor reads on each surface. TCS34725,\n"
-        "100 ms, gain 4, steps 3 and 6, 20 Oct 2026. Raw counts, then each\n"
+        "100 ms, gain 4, steps 3 and 4, 20 Oct 2026. Raw counts, then each\n"
         "channel divided by its white reading. Raw blue is never the largest,\n"
         "even on the blue stripe, because the LED is weak in blue. Divided by\n"
         "white, each stripe's own channel is the largest, which is how\n"
@@ -57,15 +57,15 @@ CAPTIONS = {
     "10.2": (
         "Fig. 10.2. The same straight, 5 to 15 s, under each steering version.\n"
         "One cell per loop, about 85 ms, coloured by what the sensor saw.\n"
-        "Steps 10, 12 and 13. Right: times it left blue, and loops with a wheel\n"
+        "Steps 8, 10 and 11. Right: times it left blue, and loops with a wheel\n"
         "under 10 rpm. Stopping a wheel at every drift jerks it (23 loops).\n"
         "Soft turns at the edge cut that but it wanders to the edge more often.\n"
         "Proportional steering leaves blue least, never reaches red or green."),
     "10.3": (
-        "Fig. 10.3. (a) The figure eight crossing, step 14, 69.0 to 70.4 s. The\n"
+        "Fig. 10.3. (a) The figure eight crossing, step 12, 69.0 to 70.4 s. The\n"
         "other strand's green, blue and red pass under the sensor in 1 s. Green\n"
         "turns it left, red right, and the two cancel. The other blue lasts\n"
-        "0.2 s, too short to follow. (b) Started the wrong way round, step 15.\n"
+        "0.2 s, too short to follow. (b) Started the wrong way round, step 13.\n"
         "The turn away from red drives onto white, so the stripe order flips\n"
         "at 2.0 s (dashed line) and it turns back onto blue. Wheel rpm below."),
 }
